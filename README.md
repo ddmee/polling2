@@ -118,6 +118,9 @@ polling2.poll(
 
 # Release notes
 
+## 0.4.2
+- Add log_value() decorator and log parameter to poll signature. Enables logging of return_values.
+
 ## 0.4.0
 - Fixed polling function from waiting another sleep whenever the max_tries value has reached zero.
 - Remove test-only dependencies from requirements to install the package.

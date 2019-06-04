@@ -1,5 +1,6 @@
-import unittest
+import logging
 import time
+import unittest
 
 from mock import patch
 import pytest
@@ -7,7 +8,7 @@ import pytest
 import polling2
 
 
-class TestPoll(unittest.TestCase):
+class TestPoll(object):
 
     def test_import(self):
         """Test that you can import via correct usage"""
@@ -87,3 +88,33 @@ class TestPoll(unittest.TestCase):
         with pytest.raises(polling2.MaxCallException):
             polling2.poll(lambda: False, step=sleep, max_tries=tries)
         assert time.time() - start_time < tries * sleep, 'Poll function slept before MaxCallException'
+
+    def test_logs_response_at_debug(self, caplog):
+        """
+        Test that the log_value decorator will log values returned to a check_success function.
+        """
+        with caplog.at_level(logging.DEBUG):
+            polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.DEBUG)
+            assert len(caplog.records) == 1, "Should only be one log record."
+            record = caplog.records[0]
+            assert record.levelname == 'DEBUG'
+            assert record.message == "poll() calls check_success(True)"
+
+    def test_logs_response_change_level(self, caplog):
+        """
+        Test that the log parameter controls the logging level in poll function
+        """
+        with caplog.at_level(logging.DEBUG):
+            polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.INFO)
+            assert len(caplog.records) == 1, "Should only be one log record."
+            record = caplog.records[0]
+            assert record.levelname == 'INFO'
+            assert record.message == "poll() calls check_success(True)"
+
+    def test_default_is_not_log(self, caplog):
+        """
+        Shouldn't log anything unless explicitly asked to do so.
+        """
+        with caplog.at_level(logging.DEBUG):
+            polling2.poll(target=lambda: True, step=0.1, max_tries=1)
+            assert len(caplog.records) == 0, "Should not be any log records"

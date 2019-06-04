@@ -1,12 +1,16 @@
 """Polling2 module containing all exceptions and helpers used for the polling function"""
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
+import logging
 import time
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class PollingException(Exception):
@@ -41,8 +45,23 @@ def is_truthy(val):
     return bool(val)
 
 
+def log_value(check_success, level=logging.DEBUG):
+    """A decorator for a check_success function that logs the return_value passed to check_success.
+
+    :opt param level: the level at which to log the return value, defaults to debug. Must be
+        one of the values in logging._levelNames (i.e. an int or a string).
+
+    Returns decorator check_success function.
+    """
+    def wrap_check_success(return_val):
+        LOGGER.log(level, "poll() calls check_success(%s)", return_val)
+        return check_success(return_val)
+    return wrap_check_success
+
+
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
-         step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None):
+         step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None,
+         log=logging.NOTSET):
     """Poll by calling a target function until a certain condition is met. You must specify at least a target
     function to be called and the step -- base wait time between each function call.
 
@@ -88,6 +107,11 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :param collect_values: By default, polling will create a new Queue to store all of the target's return values.
     Optionally, you can specify your own queue to collect these values for access to it outside of function scope.
 
+    :type log: int or str, one of logging._levelNames
+    :opt param log: By default, return values passed to check_success are not logged. However, if this param is
+    set to a log level greater than NOTSET, then the return values passed to check_success will be logged.
+    This is done by using the decorator log_value.
+
     :return: Polling will return first value from the target function that meets the condions of the check_success
     callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
     """
@@ -104,6 +128,9 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
     max_time = time.time() + timeout if timeout else None
     tries = 0
+
+    if log:
+        check_success = log_value(check_success, level=log)
 
     last_item = None
     while True:
