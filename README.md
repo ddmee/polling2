@@ -119,6 +119,7 @@ polling2.poll(
 # Release notes
 
 ## 0.4.0
+- Remove test-only dependencies from requirements to install the package.
 - No longer testing on python 2.6. Add support for travis testing on python 3.6 and pypy 3.5.
 - Creation of polling2, forked from polling as previous maintainer seems to be ignoring issues and pull-requests.
 - Remove ```*a, **k``` from poll signature. This allows Type errors to be raised if caller spells arguments into correctly, making bugs easier to find.
