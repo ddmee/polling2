@@ -8,6 +8,11 @@ import pytest
 import polling2
 
 
+def is_py_34():
+    """Returns True if the version of python running the tests is 3.4."""
+    return sys.version_info.major == 3 and sys.version_info.minor == 4
+
+
 class TestPoll(object):
 
     def test_import(self):
@@ -88,6 +93,10 @@ class TestPoll(object):
         with pytest.raises(polling2.MaxCallException):
             polling2.poll(lambda: False, step=sleep, max_tries=tries)
         assert time.time() - start_time < tries * sleep, 'Poll function slept before MaxCallException'
+
+
+@pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")
+class TestPollLogging(object):
 
     def test_logs_response_at_debug(self, caplog):
         """
