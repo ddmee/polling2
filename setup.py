@@ -17,7 +17,7 @@ setup(
     version=__version__,
     author='Donal Mee',
     author_email='mee.donal@gmail.com',
-    description='Powerful polling utility with many configurable options',
+    description='Updated polling utility with many configurable options',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url='http://github.com/ddmee/polling2',
