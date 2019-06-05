@@ -116,7 +116,36 @@ polling2.poll(
     timeout=10)
 ```
 
+### Example: Logging the return values from the target function.
+
+```python
+import logging
+import requests
+
+def is_correct_response(response):
+    """Check that the response returned 'success'"""
+    return response == 'success'
+
+polling2.poll(
+    lambda: requests.put('http://mysite.com/api/user', data={'username': 'Jill'},
+    check_success=is_correct_response,
+    step=1,
+    timeout=10,
+    log=logging.DEBUG)
+```
+
+This will log the string representation of response object to python's logging module at the debug level.
+A message like this will be sent to the log for each return value. You can change the level by providing
+a different value to the log parameter.
+
+```
+poll() calls check_success(<Response [200]>)
+```
+
 # Release notes
+
+## 0.4.2
+- Add log_value() decorator and log parameter to poll signature. Enables logging of return_values.
 
 ## 0.4.0
 - Fixed polling function from waiting another sleep whenever the max_tries value has reached zero.
