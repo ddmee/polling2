@@ -3,7 +3,7 @@ import sys
 import time
 import unittest
 
-from mock import patch
+from mock import patch, Mock
 import pytest
 
 import polling2
@@ -95,6 +95,20 @@ class TestPoll(object):
             polling2.poll(lambda: False, step=sleep, max_tries=tries)
         assert time.time() - start_time < tries * sleep, 'Poll function slept before MaxCallException'
 
+    def test_ignore_specified_exceptions(self):
+        """
+        Test that ignore_exceptions tuple will ignore exceptions specified.
+        Should throw any errors not in the tuple.
+        """
+        # raises_errors is a function that returns 3 different things, each time it is called.
+        # First it raises a ValueError, then EOFError, then a TypeError.
+        raises_errors = Mock(return_value=True, side_effect=[ValueError, EOFError, RuntimeError])
+        with pytest.raises(RuntimeError):
+            # We are ignoring the exceptions other than a TypeError.
+            polling2.poll(target=raises_errors, step=0.1, max_tries=3,
+                          ignore_exceptions=(ValueError, EOFError))
+        assert raises_errors.call_count == 3
+
 
 @pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")
 class TestPollLogging(object):
@@ -128,3 +142,34 @@ class TestPollLogging(object):
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1)
             assert len(caplog.records) == 0, "Should not be any log records"
+
+    def test_log_error_default_is_not_log(self, caplog):
+        """
+        Shouldn't log anything unless explicitly asked to do so.
+        """
+        raises_errors = Mock(side_effect=ValueError('msg is this'))
+        with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
+            polling2.poll(target=raises_errors, ignore_exceptions=(ValueError),
+                          step=0.1, max_tries=2)
+            assert len(caplog.records) == 0, "Wrong number of log records."
+            # Test that logging.NOTSET does not print log records either.
+            polling2.poll(target=raises_errors, ignore_exceptions=(ValueError),
+                          step=0.1, max_tries=2, log_error=logging.NOTSET)
+            assert len(caplog.records) == 0, "Wrong number of log records."
+
+    def test_log_error_set_at_debug_level(self, caplog):
+        """
+        Test that when the log_error parameter is set to debug level, the ignored
+        errors are sent to the logger.
+        """
+        raises_errors = Mock(side_effect=[ValueError('msg this'), RuntimeError('this msg')])
+        with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
+            polling2.poll(target=raises_errors, ignore_exceptions=(ValueError, RuntimeError),
+                          step=0.1, max_tries=2, log_error=logging.DEBUG)
+        assert len(caplog.records) == 2, "Wrong number of log records."
+        assert caplog.records[0].message == "poll() ignored exception ValueError('msg this',)"
+        assert caplog.records[1].message == "poll() ignored exception RuntimeError('this msg',)"
+
+
+
+
