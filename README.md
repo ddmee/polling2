@@ -6,14 +6,21 @@
 polling2
 =============
 
+_Never write another polling function again!_
+
 Polling2 is a powerful python utility used to wait for a function to return a certain expected condition.
+
 Some possible uses cases include:
 
 - Wait for API response to return with code 200
 - Wait for a file to exist (or not exist)
 - Wait for a thread lock on a resource to expire
 
+Polling2 is handy for getting rid of all that duplicated polling-code. Often, applications require retrying until the correct response is returned. Why re-implement the ability to poll again and again? Use Polling2!
+
 Polling2 is a fork of the original [polling](https://github.com/justiniso/polling). It was forked when the original maintainer failed to respond to issues or PRs. 
+
+Polling2 is ++under active development++. Would you like to see a particular feature? Ask and thou shall recieve.
 
 # Installation
 
@@ -23,7 +30,7 @@ pip install polling2
 
 # Development installation
 
-```
+```shell
 # install lib, but use system links from the repo into sitepackages.
 python setup.py develop
 # install test dependenices.
@@ -139,11 +146,49 @@ This will log the string representation of response object to python's logging m
 A message like this will be sent to the log for each return value. You can change the level by providing
 a different value to the log parameter.
 
-```
+```text
 poll() calls check_success(<Response [200]>)
 ```
 
+There is also an option to log the exceptions that are caught by ignore_exceptions. Note, the full-exception traceback
+will not be printed in the logs. Instead, the error and it's message (using %r formatting) will appear. In the following
+code snippet, the ValueError raised by the function `raises_error()` will be sent to the logger at the 'warning' level.
+
+```python
+import polling2
+import logging
+import mock
+
+# basicConfig should sent warning level messages to the stdout.
+logging.basicConfig()
+
+# Create a function that raises a ValueError, then a RuntimeError.
+raises_error = mock.Mock(side_effect=[ValueError('a message'), RuntimeError])
+
+try:
+    polling2.poll(
+        target=raises_error,
+        step=0.1,
+        max_tries=3,
+        ignore_exceptions=(ValueError),  # Only ignore the ValueError.
+        log_error=logging.WARNING  # Ignored errors should be passed to the logger at warning level.
+    )
+except RuntimeError as _e:
+    print "Un-ignored %r" % _e``
+```
+ 
+# Future extensions
+
+- Add poll_killer(). Specify a hard timeout so that if the function being polled blocks and doesn't return, poll_killer() will raise a timeout.
+  - Add an option to do via multiprocessing.
+  - Add an option to do via threading - probably the default option.
+- Add poll_chain(). Have reason to poll a bunch of functions in a row? poll_chain() allows you to chain a bunch of polling functions together.
+- Allow step to be specificed as 0, so that we can poll continously. (Perhaps it's best to write a poll_continous() method.)
+
 # Release notes
+
+## 0.4.3 
+- Add log_error parameter to the poll signature. Enables logging of ignored exceptions.
 
 ## 0.4.2
 - Add log_value() decorator and log parameter to poll signature. Enables logging of return_values.

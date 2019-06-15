@@ -1,6 +1,10 @@
-"""Polling2 module containing all exceptions and helpers used for the polling function"""
+"""Polling2 module containing all exceptions and helpers used for the polling function
 
-__version__ = '0.4.2'
+Never write another polling function again.
+
+"""
+
+__version__ = '0.4.3'
 
 import logging
 import time
@@ -61,7 +65,7 @@ def log_value(check_success, level=logging.DEBUG):
 
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
          step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None,
-         log=logging.NOTSET):
+         log=logging.NOTSET, log_error=logging.NOTSET):
     """Poll by calling a target function until a certain condition is met. You must specify at least a target
     function to be called and the step -- base wait time between each function call.
 
@@ -112,6 +116,13 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     set to a log level greater than NOTSET, then the return values passed to check_success will be logged.
     This is done by using the decorator log_value.
 
+    :type log_error: int or str, one of logging._levelNames
+    :opt param log_level: If ignore_exception has been set, you might want to log the exceptions that are
+    ignored. If the log_error level is greater than NOTSET, then any caught exceptions will be logged at that
+    level. Note: the logger.exception() function is not used. That would print the stacktrace in the logs. Because
+    you are ignoring these exceptions, it seems unlikely that'd you'd want a full stack trace for each exception.
+    However, if you do what this, you can retrieve the exceptions using the collect_values parameter.
+
     :return: Polling will return first value from the target function that meets the condions of the check_success
     callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
     """
@@ -143,6 +154,10 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
             last_item = val
         except ignore_exceptions as e:
             last_item = e
+
+            if log_error: # NOTSET is 0, so it'll evaluate to False.
+                LOGGER.log(log_error, "poll() ignored exception %r", e)
+
         else:
             # Condition passes, this is the only "successful" exit from the polling function
             if check_success(val):
