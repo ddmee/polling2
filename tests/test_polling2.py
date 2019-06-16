@@ -3,6 +3,12 @@ import sys
 import time
 import unittest
 
+# Some minor diff between py2 and py3.
+try:
+    import queue
+except ImportError:
+    import Queue as queue
+
 from mock import patch, Mock
 import pytest
 
@@ -14,14 +20,37 @@ def is_py_34():
     return sys.version_info.major == 3 and sys.version_info.minor == 4
 
 
+def return_it(*args):
+    """For the benefit of multiprocessing pickable target.
+    Returns a tuple of the args.
+    """
+    return args
+
+
+class SideEffect(object):
+    """
+    Create a callable object which returns the next item in the iterable passed
+    to the constructor.
+    """
+    def __init__(self, iterable):
+        self._iter = iter(iterable)
+
+    def __call__(self):
+        return next(self._iter)
+
+
+FALSE_FALSE_TRUE = SideEffect([False, False, True])
+
+
 class TestPoll(object):
 
     def test_import(self):
         """Test that you can import via correct usage"""
         import polling2
-        from polling2 import poll
+        from polling2 import poll, poll_killer
 
         assert poll
+        assert poll_killer
         assert polling2
 
     def test_arg_no_arg(self):
@@ -171,5 +200,67 @@ class TestPollLogging(object):
         assert caplog.records[1].message == "poll() ignored exception RuntimeError('this msg',)"
 
 
+class TestPollKiller(object):
+    """
+    Test that a blocking target is forcibly returned when poll_killer() is used.
+    """
+    def test_blocking_call_raises_timeout_exception(self):
+        """
+        If call a target that sleeps for 10 seconds, but the timeout is specified
+        to be 1 second, then a TimeoutException should be raised even though the
+        target has effectively blocked the timeout handling of poll().
+        """
+        with pytest.raises(polling2.TimeoutException) as excinfo:
+            polling2.poll_killer(target=time.sleep, step=0.01, args=(10,), timeout=1)
+        expected_msg = "poll()'s target blocked and failed to return within 1 second(s)."
+        assert expected_msg == str(excinfo.value)
 
+    def test_works_with_no_keywords(self):
+        """
+        poll_killer() uses *arg, **kwargs to pass parameters through to poll().
+        We need to be sure that if the user of poll_killer() uses positionl arguments
+        only, the function behaves as expected.
+        """
+        with pytest.raises(polling2.TimeoutException) as excinfo:
+            # poll() sig is target, step, args, kwargs, timeout
+            polling2.poll_killer(time.sleep, 0.01, (10,), {}, timeout=1)
+        expected_msg = "poll()'s target blocked and failed to return within 1 second(s)."
+        assert expected_msg == str(excinfo.value)
 
+    def test_can_retrieve_return_value_from_a_successful_target(self):
+        """
+        If the target() returns a value that satifies the check_success() then
+        poll_killer() should return that value.
+        """
+        assert polling2.poll_killer(target=return_it, step=0.1, timeout=1, args=('hello',)) == ('hello',)
+
+    def test_can_get_all_return_values_using_collect_values(self):
+        """
+        If a user specifies collect_values as True, can they get the values back?
+        """
+        with pytest.raises(polling2.MaxCallException) as excinfo:
+            polling2.poll(target=FALSE_FALSE_TRUE, step=0.1, timeout=1, max_tries=2)
+
+        the_queue = excinfo.value.values
+        assert isinstance(the_queue, queue.Queue)
+
+        for x in range(3):
+            if x < 2:
+                # first 2 items (the only 2 items) should be the value false
+                assert the_queue.get(block=False) is False
+            else:
+                # The 3rd time get() is called, we should get this exception
+                with pytest.raises(queue.Empty):
+                    the_queue.get(block=False)
+
+    def test_can_use_log_error(self):
+        """
+        Test that the logged-exceptions messages make their way into the main processe's logger.
+        """
+        assert False
+
+    def test_can_use_log(self):
+        """
+        Same as above, except for the return values.
+        """
+        assert False

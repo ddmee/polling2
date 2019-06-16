@@ -4,10 +4,12 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
+import multiprocessing
 import logging
 import time
+
 try:
     from Queue import Queue
 except ImportError:
@@ -19,9 +21,10 @@ LOGGER = logging.getLogger(__name__)
 
 class PollingException(Exception):
     """Base exception that stores all return values of attempted polls"""
-    def __init__(self, values, last=None):
+    def __init__(self, msg, values, last=None):
         self.values = values
         self.last = last
+        super(PollingException, self).__init__(msg)
 
 
 class TimeoutException(PollingException):
@@ -61,6 +64,43 @@ def log_value(check_success, level=logging.DEBUG):
         LOGGER.log(level, "poll() calls check_success(%s)", return_val)
         return check_success(return_val)
     return wrap_check_success
+
+
+def poll_killer(*args, **kwargs):
+    """
+    Guarantees that, even a blocking target, respects the timeout value.
+
+    :param timeout: (mandatory)
+
+    Otherwise, all arguments are the same as poll.
+
+    Run's the target in a second process, so even if it blocks, the specified timeout is
+    still respected. Protection is provided via a process and a timeout. 
+
+    WARNING: the target() function must be picklable. Due to how multiprocessing works.
+    """
+    # TODO: Add ability to retrive log messages from the second process for log and log_error.
+    # I'm not sure it's possible with apply_async, unless perhaps log and log_error are created
+    # as Queues? Need to work this out.
+    if not kwargs.get('timeout'):
+        raise TypeError('timeout parameter missing')
+    else:
+        timeout = kwargs['timeout']
+        pool = multiprocessing.Pool(processes=1)
+        async_result = pool.apply_async(func=poll, args=args, kwds=kwargs)
+        try:
+            result = async_result.get(timeout=timeout)
+        except multiprocessing.TimeoutError:
+            _msg = "poll()'s target blocked and failed to return within %s second(s)." % timeout
+            raise TimeoutException(_msg, values=[])
+        else:
+            return result
+
+
+def _check_max_tries(max_tries, tries, values, last_item):
+    if max_tries is not None and tries >= max_tries:
+        _msg = "polls()'s target failed check_sucess() after %s calls" % max_tries
+        raise MaxCallException(msg=_msg, values=values, last=last_item)
 
 
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
@@ -146,8 +186,8 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     last_item = None
     while True:
 
-        if max_tries is not None and tries >= max_tries:
-            raise MaxCallException(values, last_item)
+        _check_max_tries(max_tries=max_tries, tries=tries, values=values,
+                         last_item=last_item)
 
         try:
             val = target(*args, **kwargs)
@@ -167,12 +207,14 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
         tries += 1
 
         # Check the max tries at this point so it will not sleep before raising the exception
-        if max_tries is not None and tries >= max_tries:
-            raise MaxCallException(values, last_item)
+        _check_max_tries(max_tries=max_tries, tries=tries, values=values,
+                         last_item=last_item)
 
         # Check the time after to make sure the poll function is called at least once
         if max_time is not None and time.time() >= max_time:
-            raise TimeoutException(values, last_item)
+            _msg = "polls()'s target failed to return within %s seconds" % timeout
+            raise TimeoutException(msg=_msg, values=values, last=last_item)
 
         time.sleep(step)
         step = step_function(step)
+
