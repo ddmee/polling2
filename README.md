@@ -179,13 +179,13 @@ except RuntimeError as _e:
  
 # Future extensions
 
-- Add poll_killer(). Specify a hard timeout so that if the function being polled blocks and doesn't return, poll_killer() will raise a timeout.
-  - Add an option to do via multiprocessing.
-  - Add an option to do via threading - probably the default option.
 - Add poll_chain(). Have reason to poll a bunch of functions in a row? poll_chain() allows you to chain a bunch of polling functions together.
 - Allow step to be specificed as 0, so that we can poll continously. (Perhaps it's best to write a poll_continous() method.)
 
 # Release notes
+
+## 0.4.4
+- Add poll_killer() that enforces a hard-timeout on a target that blocks by running the target in a second process.
 
 ## 0.4.3 
 - Add log_error parameter to the poll signature. Enables logging of ignored exceptions.
