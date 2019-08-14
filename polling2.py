@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import logging
 import time
@@ -47,6 +47,14 @@ def step_linear_double(step):
 def is_truthy(val):
     """Use this function to test if a return value is truthy"""
     return bool(val)
+
+
+def is_value(val):
+    """Use this function to create a custom checker. Whatever val is, the checker checks
+     that whatever is returned from that target is that value."""
+    def checker(_val):
+        return val is _val
+    return checker
 
 
 def log_value(check_success, level=logging.DEBUG):
