@@ -109,6 +109,23 @@ class TestPoll(object):
                           ignore_exceptions=(ValueError, EOFError))
         assert raises_errors.call_count == 3
 
+    def test_check_is_value(self):
+        """
+        Test that is_value() function can be used to create custom checkers.
+        """
+        result = polling2.poll(target=lambda: None, step=0.1, max_tries=1,
+                               check_success=polling2.is_value(None))
+        assert result is None
+        result = polling2.poll(target=lambda: False, step=0.1, max_tries=1,
+                               check_success=polling2.is_value(False))
+        assert result is False
+        result = polling2.poll(target=lambda: 123, step=0.1, max_tries=1,
+                               check_success=polling2.is_value(123))
+        assert result is 123
+        with pytest.raises(polling2.MaxCallException):
+            polling2.poll(target=lambda: 123, step=0.1, max_tries=1,
+                          check_success=polling2.is_value(444))
+
 
 @pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")
 class TestPollLogging(object):
@@ -169,7 +186,3 @@ class TestPollLogging(object):
         assert len(caplog.records) == 2, "Wrong number of log records."
         assert caplog.records[0].message == "poll() ignored exception ValueError('msg this',)"
         assert caplog.records[1].message == "poll() ignored exception RuntimeError('this msg',)"
-
-
-
-

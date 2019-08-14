@@ -107,6 +107,18 @@ except polling2.TimeoutException, te:
         print te.values.get()
 ```
 
+### Example: Using a custom checker
+
+```python
+# is_truthy() is the default checker for the parameter check_success. But, it's easy to create a custom
+# checker function, that tests whether the value returned by the target is the expected value.
+
+# Here the target is going to return None, which the custom checker, created by is_value(None)
+# will return True for.
+polling2.poll(target=lambda: None, step=0.1, max_tries=1, check_success=polling2.is_value(None))
+# Or another example, where we can test that False is returned by the target.
+polling2.poll(target=lambda: False, step=0.1, max_tries=1, check_success=polling2.is_value(False))
+```
 
 ### Example: Using a custom condition callback function
 
@@ -187,7 +199,10 @@ except RuntimeError as _e:
 
 # Release notes
 
-## 0.4.3 
+## 0.4.4
+- Add is_value() function. A function that allows a user to easily build a custom checker, like is_truthy(), but for any value.
+
+## 0.4.3
 - Add log_error parameter to the poll signature. Enables logging of ignored exceptions.
 
 ## 0.4.2
