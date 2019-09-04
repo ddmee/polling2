@@ -184,3 +184,23 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
         time.sleep(step)
         step = step_function(step)
+
+
+def poll_chain(timeout, *funcs):
+    """Chain a bunch of polling functions together, with one shared timeout value.
+
+    :param timeout:
+
+    :param *funcs: (if only we could pass {} delayed execution statements like in powershell.)
+        I think the only easy way to do this is with lambdas
+
+        [
+            lambda: poll(target=foo, step=2, timeout=None),
+            lambda: poll(target=pho, step=3, timeout=None),
+        ]
+    """
+    # get the time before the first polling func
+    # after first polling func has returned, get the time, take the time spent
+    # away from the timeout, and then pass the remaining time as the argument to
+    # timeout of the next polling function, etc.
+
