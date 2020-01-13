@@ -144,7 +144,7 @@ class TestPollLogging(object):
                         # Note, in verbose mode, need to explicitly include whitespace
                         # by putting blackslash in front of anywhere there should be whitespace.
                         Begin\ poll\(
-                        target=<function\ <lambda>\ at\ 0x[0-9A-Z]+>,  # contains pointer to the function.
+                        target=<function\ <lambda>\ at\ 0x[0-9A-Za-z]+>,  # contains pointer to the function.
                         \ step=0\.1,
                         \ timeout=None,
                         \ max_tries=1,
