@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 import time
 import unittest
@@ -130,14 +131,37 @@ class TestPoll(object):
 @pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")
 class TestPollLogging(object):
 
+    def test_logs_call(self, caplog):
+        """
+        Test that basic information about the call to poll() is always logged.
+        """
+        with caplog.at_level(logging.DEBUG):
+            polling2.poll(target=lambda: True, step=0.1, max_tries=1)
+            assert len(caplog.records) == 1, "Should only be one log record."
+            record = caplog.records[0]
+            assert record.levelname == 'DEBUG'
+            pattern = r"""
+                        # Note, in verbose mode, need to explicitly include whitespace
+                        # by putting blackslash in front of anywhere there should be whitespace.
+                        Begin\ poll\(
+                        target=<function.*<lambda>\ at\ 0x[0-9A-Za-z]+>,  # contains pointer to the function.
+                        \ step=0\.1,
+                        \ timeout=None,
+                        \ max_tries=1,
+                        \ poll_forever=False
+                        \)
+                    """
+            # Assert we have a match, which means the record is like the regular expression.
+            assert re.search(pattern=pattern, string=record.message, flags=re.VERBOSE)
+
     def test_logs_response_at_debug(self, caplog):
         """
         Test that the log_value decorator will log values returned to a check_success function.
         """
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.DEBUG)
-            assert len(caplog.records) == 1, "Should only be one log record."
-            record = caplog.records[0]
+            assert len(caplog.records) == 2, "Should only be two log records."
+            record = caplog.records[1]
             assert record.levelname == 'DEBUG'
             assert record.message == "poll() calls check_success(True)"
 
@@ -147,32 +171,33 @@ class TestPollLogging(object):
         """
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.INFO)
-            assert len(caplog.records) == 1, "Should only be one log record."
-            record = caplog.records[0]
+            assert len(caplog.records) == 2, "Should only be two log record."
+            record = caplog.records[1]
             assert record.levelname == 'INFO'
             assert record.message == "poll() calls check_success(True)"
 
     def test_default_is_not_log(self, caplog):
         """
-        Shouldn't log anything unless explicitly asked to do so.
+        Shouldn't log anything unless explicitly asked to do so. Except for Begin poll()
         """
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1)
-            assert len(caplog.records) == 0, "Should not be any log records"
+            assert len(caplog.records) == 1, "Should ony be one log records"
+            assert 'Begin poll(' in caplog.records[0].msg
 
     def test_log_error_default_is_not_log(self, caplog):
         """
-        Shouldn't log anything unless explicitly asked to do so.
+        Shouldn't log anything unless explicitly asked to do so. Except for Begin poll()
         """
         raises_errors = Mock(side_effect=ValueError('msg is this'))
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
             polling2.poll(target=raises_errors, ignore_exceptions=(ValueError),
                           step=0.1, max_tries=2)
-            assert len(caplog.records) == 0, "Wrong number of log records."
+            assert len(caplog.records) == 1, "Wrong number of log records."
             # Test that logging.NOTSET does not print log records either.
             polling2.poll(target=raises_errors, ignore_exceptions=(ValueError),
                           step=0.1, max_tries=2, log_error=logging.NOTSET)
-            assert len(caplog.records) == 0, "Wrong number of log records."
+            assert len(caplog.records) == 2, "Wrong number of log records."
 
     def test_log_error_set_at_debug_level(self, caplog):
         """
@@ -183,6 +208,6 @@ class TestPollLogging(object):
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
             polling2.poll(target=raises_errors, ignore_exceptions=(ValueError, RuntimeError),
                           step=0.1, max_tries=2, log_error=logging.DEBUG)
-        assert len(caplog.records) == 2, "Wrong number of log records."
-        assert caplog.records[0].message == "poll() ignored exception ValueError('msg this',)"
-        assert caplog.records[1].message == "poll() ignored exception RuntimeError('this msg',)"
+        assert len(caplog.records) == 3, "Wrong number of log records."
+        assert caplog.records[1].message == "poll() ignored exception ValueError('msg this',)"
+        assert caplog.records[2].message == "poll() ignored exception RuntimeError('this msg',)"

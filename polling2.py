@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 import logging
 import time
@@ -131,6 +131,11 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     you are ignoring these exceptions, it seems unlikely that'd you'd want a full stack trace for each exception.
     However, if you do what this, you can retrieve the exceptions using the collect_values parameter.
 
+    Note: a message is written to polling2 logger when poll() is called. This logs a message like so:
+        `Begin poll(target=<>, step=<>, timeout=<>, max_tries=<>, poll_forever=<>)`
+    This message should allow a user to work-out how long the poll could take, and thereby detect a hang in real-time
+    if the poll takes longer than it should.
+
     :return: Polling will return first value from the target function that meets the condions of the check_success
     callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
     """
@@ -145,8 +150,12 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     kwargs = kwargs or dict()
     values = collect_values or Queue()
 
-    max_time = time.time() + timeout if timeout else None
+    timeout = time.time() + timeout if timeout else None
     tries = 0
+
+    # Always log what polling is about to take place.
+    msg = ("Begin poll(target=%s, step=%s, timeout=%s, max_tries=%s, poll_forever=%s)")
+    LOGGER.debug(msg, target, step, timeout, max_tries, poll_forever)
 
     if log:
         check_success = log_value(check_success, level=log)
@@ -179,7 +188,7 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
             raise MaxCallException(values, last_item)
 
         # Check the time after to make sure the poll function is called at least once
-        if max_time is not None and time.time() >= max_time:
+        if timeout is not None and time.time() >= timeout:
             raise TimeoutException(values, last_item)
 
         time.sleep(step)
