@@ -145,8 +145,12 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     kwargs = kwargs or dict()
     values = collect_values or Queue()
 
-    max_time = time.time() + timeout if timeout else None
+    timeout = time.time() + timeout if timeout else None
     tries = 0
+
+    # Always log what polling is about to take place.
+    msg = ("Begin poll(target=%s, step=%s, timeout=%s, max_tries=%s, poll_forever=%s)")
+    LOGGER.debug(msg, target, step, timeout, max_tries, poll_forever)
 
     if log:
         check_success = log_value(check_success, level=log)
@@ -179,7 +183,7 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
             raise MaxCallException(values, last_item)
 
         # Check the time after to make sure the poll function is called at least once
-        if max_time is not None and time.time() >= max_time:
+        if timeout is not None and time.time() >= timeout:
             raise TimeoutException(values, last_item)
 
         time.sleep(step)
