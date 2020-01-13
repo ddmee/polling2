@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 import logging
 import time
@@ -130,6 +130,11 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     level. Note: the logger.exception() function is not used. That would print the stacktrace in the logs. Because
     you are ignoring these exceptions, it seems unlikely that'd you'd want a full stack trace for each exception.
     However, if you do what this, you can retrieve the exceptions using the collect_values parameter.
+
+    Note: a message is written to polling2 logger when poll() is called. This logs a message like so:
+        `Begin poll(target=<>, step=<>, timeout=<>, max_tries=<>, poll_forever=<>)`
+    This message should allow a user to work-out how long the poll could take, and thereby detect a hang in real-time
+    if the poll takes longer than it should.
 
     :return: Polling will return first value from the target function that meets the condions of the check_success
     callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.

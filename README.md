@@ -199,6 +199,10 @@ except RuntimeError as _e:
 
 # Release notes
 
+## 0.4.5
+- 'Begin poll(*)' message is logged when poll() is called. Hopefully this means the user doesn't feel the need to write a message before
+every call to poll() to indicate how long the poll() might take.
+
 ## 0.4.4
 - Add is_value() function. A function that allows a user to easily build a custom checker, like is_truthy(), but for any value.
 
