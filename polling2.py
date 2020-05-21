@@ -139,6 +139,9 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :return: Polling will return first value from the target function that meets the condions of the check_success
     callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
     """
+    
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT, handler)
 
     assert (timeout is not None or max_tries is not None) or poll_forever, \
         ('You did not specify a maximum number of tries or a timeout. Without either of these set, the polling '
@@ -193,3 +196,7 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
         time.sleep(step)
         step = step_function(step)
+
+def handler(signum, frame):
+    LOGGER.log(logging.DEBUG, "Polling Interrupted requested...exiting")
+    sys.exit()
