@@ -6,7 +6,7 @@
 Polling2: Never write another polling function
 ==============================================
 
-Release v\ |version|. (:ref:`Installation <install>`)
+Release v\ |version|.
 
 .. image:: https://travis-ci.org/ddmee/polling2.svg?branch=master
     :target: https://travis-ci.org/ddmee/polling2
@@ -22,7 +22,16 @@ Release v\ |version|. (:ref:`Installation <install>`)
 
 **Polling2** is a powerful python utility used to wait for a function to return when the specified condition is met.
 
------------------------------
+Install
+-------
+.. toctree::
+    :maxdepth: 2
+
+    install
+
+
+Examples
+--------
 
 **Watch polling do some arbitrary dances**::
 
@@ -31,7 +40,12 @@ Release v\ |version|. (:ref:`Installation <install>`)
     >>  polling2.poll(target=time.time, check_success=lambda x: int(x) % 5 == 0, step=0.5, timeout=6)
     1599737060.4507122
 
------------------------------
+View all the examples:
+
+.. toctree::
+    :maxdepth: 3
+
+    examples
 
 API
 -----------------------------

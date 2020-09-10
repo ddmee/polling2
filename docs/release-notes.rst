@@ -7,6 +7,7 @@ Release notes
 - No API changes. Presentation changes only.
 - Added /docs directory written for sphinx. Setup a readthedocs site from the sphinx build.
 - Moved README contents to be largely inside the /docs/.
+- Updated some of the comments strings inside polling2 module.
 
 0.4.5
 -----
