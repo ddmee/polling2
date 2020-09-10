@@ -11,9 +11,11 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 # import os
-# import sys
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
+from pathlib import Path
+sys.path.append(str(Path('../').resolve()))
+import polling2
 
 # -- Project information -----------------------------------------------------
 
@@ -22,7 +24,8 @@ copyright = '2020, Donal Mee'
 author = 'Donal Mee'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4.6'
+release = polling2.__version__
+version = release
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,7 +34,10 @@ release = '0.4.6'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
 ]
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,7 +55,18 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'alabaster'
 
+html_theme_options = {
+    "show_powered_by": False,
+    "github_user": "ddmee",
+    "github_repo": "polling2",
+    "github_banner": True,
+    "show_related": False
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
+html_show_copyright = True
