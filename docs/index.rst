@@ -8,8 +8,8 @@ Polling2: Never write another polling function
 
 Release v\ |version|.
 
-.. image:: https://travis-ci.org/ddmee/polling2.svg?branch=master
-    :target: https://travis-ci.org/ddmee/polling2
+.. image:: https://travis-ci.com/ddmee/polling2.svg?branch=master
+    :target: https://travis-ci.com/ddmee/polling2
 
 .. image:: https://img.shields.io/pypi/dm/polling2.svg
     :target: https://pypi.org/project/polling2
