@@ -9,6 +9,8 @@ _Never write another polling function again!_
 
 Documentation available at [Read the Docs](https://polling2.readthedocs.io)
 
+You can install the package from [Pypi](https://pypi.org/project/polling2/)
+
 Polling2 is a powerful python utility used to wait for a function to return a certain expected condition.
 
 Some possible uses cases include:

@@ -1,6 +1,10 @@
 Installation
 ============
 
+You can fetch the package from Pypi at polling2_.
+
+.. _polling2: https://pypi.org/project/polling2/
+
 Install using pip::
 
     python -m pip install polling2

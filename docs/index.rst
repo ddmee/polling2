@@ -24,6 +24,13 @@ Release v\ |version|.
 
 Install
 -------
+
+polling2_ is available from Pypi.::
+
+    python -m pip install polling2
+
+.. _polling2: https://pypi.org/project/polling2/
+
 .. toctree::
     :maxdepth: 2
 
