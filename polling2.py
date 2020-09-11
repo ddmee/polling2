@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.5'
+__version__ = '0.4.6'
 
 import logging
 import time

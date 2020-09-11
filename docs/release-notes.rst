@@ -4,7 +4,7 @@ Release notes
 0.4.6
 -----
 
-- No API changes. Presentation changes only.
+- No API changes. Presentation/documentations changes only. Should pose no backwards compatibility risk.
 - Added /docs directory written for sphinx. Setup a readthedocs site from the sphinx build.
 - Moved README contents to be largely inside the /docs/.
 - Updated some of the comments strings inside polling2 module.
