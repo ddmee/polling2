@@ -1,10 +1,10 @@
-"""Polling2 module containing all exceptions and helpers used for the polling function
+"""polling2 module containing all exceptions and helpers used for the polling function.
 
 Never write another polling function again.
 
 """
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 import logging
 import time
@@ -46,9 +46,9 @@ def step_constant(step):
 def step_linear_double(step):
     """Use this function when you want the step to double each iteration
     (e.g. like the way ArrayList works in Java).
-    Note that this can result in very long poll times after a few iterations
+    Note that this can result in very long poll times after a few iterations.
 
-    :param step: a number, that is doubled
+    :param step: A number, that is doubled.
 
     :return: double of step
     """
@@ -58,7 +58,7 @@ def step_linear_double(step):
 def is_truthy(val):
     """Use this function to test if a return value is truthy
 
-    :return: boolean
+    :return: boolean.
     """
     return bool(val)
 
@@ -68,7 +68,7 @@ def is_value(val):
 
     :param val: Whatever val is, the checker checks that whatever is returned from that target is that value.
 
-    :return: checker function testing if parameter is val, call checker to get a boolean
+    :return: Checker function testing if parameter is val, call checker to get a boolean.
     """
     def checker(_val):
         return val is _val
@@ -78,10 +78,10 @@ def is_value(val):
 def log_value(check_success, level=logging.DEBUG):
     """A decorator for a check_success function that logs the return_value passed to check_success.
 
-    :param level: (optional) the level at which to log the return value, defaults to debug. Must be
+    :param level: (optional) The level at which to log the return value, defaults to debug. Must be
         one of the values in logging._levelNames (i.e. an int or a string).
 
-    :return: decorator check_success function.
+    :return: Decorator check_success function.
     """
     def wrap_check_success(return_val):
         LOGGER.log(level, "poll() calls check_success(%s)", return_val)
@@ -89,27 +89,35 @@ def log_value(check_success, level=logging.DEBUG):
     return wrap_check_success
 
 
+def get_tries(tries):
+    """Use this function to get the current tries value.
+
+    :return: The current tries value.
+    """
+    return tries
+
+
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
-         step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None,
+         step_function=step_constant, tries_function=get_tries, ignore_exceptions=(), poll_forever=False, collect_values=None,
          log=logging.NOTSET, log_error=logging.NOTSET):
     """Poll by calling a target function until a certain condition is met.
 
     You must specify at least a target function to be called and the step -- base wait time between each function call.
 
-    :param step: Step defines the amount of time to wait (in seconds)
+    :param step: Step defines the amount of time to wait (in seconds).
 
-    :param args: Arguments to be passed to the target function
+    :param args: Arguments to be passed to the target function.
 
-    :type kwargs: dict
-    :param kwargs: Keyword arguments to be passed to the target function
+    :type kwargs: dict.
+    :param kwargs: Keyword arguments to be passed to the target function.
 
     :param timeout: The target function will be called until the time elapsed is greater than the maximum timeout
         (in seconds). NOTE that the actual execution time of the function *can* exceed the time specified in the timeout.
         For instance, if the target function takes 10 seconds to execute and the timeout is 21 seconds, the polling
         function will take a total of 30 seconds (two iterations of the target --20s which is less than the timeout--21s,
-        and a final iteration)
+        and a final iteration).
 
-    :param max_tries: Maximum number of times the target function will be called before failing
+    :param max_tries: Maximum number of times the target function will be called before failing.
 
     :param check_success: A callback function that accepts the return value of the target function. It should
         return true if you want the polling function to stop and return this value. It should return false if you want it
@@ -119,11 +127,15 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :param step_function: A callback function that accepts each iteration's "step." By default, this is constant,
         but you can also pass a function that will increase or decrease the step. As an example, you can increase the wait
         time between calling the target function by 10 seconds every iteration until the step is 100 seconds--at which
-        point it should remain constant at 100 seconds
+        point it should remain constant at 100 seconds.
 
         >>> def my_step_function(step):
         >>>     step += 10
         >>>     return max(step, 100)
+
+    :param tries_function: A callback function that accepts the current tries value (before the next increment) for further processing. 
+        It should return the original tries value if you do not want to change the current tries value. The default is a callback 
+        function that returns back the unmodified current tries value.
 
     :type ignore_exceptions: tuple
     :param ignore_exceptions: You can specify a tuple of exceptions that should be caught and ignored on every
@@ -153,7 +165,7 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :return: Polling will return first value from the target function that meets the condions of the check_success
         callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
 
-    Note: a message is written to polling2 logger when poll() is called. This logs a message like so:
+    Note: A message is written to polling2 logger when poll() is called. This logs a message like so:
 
         >>> Begin poll(target=<>, step=<>, timeout=<>, max_tries=<>, poll_forever=<>)
 
@@ -197,18 +209,22 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
                 LOGGER.log(log_error, "poll() ignored exception %r", e)
 
         else:
-            # Condition passes, this is the only "successful" exit from the polling function
+            # Condition passes, this is the only "successful" exit from the polling function.
             if check_success(val):
                 return val
 
         values.put(last_item)
+        
+        # Performs processing on the current tries value if a different tries_function is specfied.
+        tries = tries_function(tries)
+        
         tries += 1
 
-        # Check the max tries at this point so it will not sleep before raising the exception
+        # Check the max tries at this point so it will not sleep before raising the exception.
         if max_tries is not None and tries >= max_tries:
             raise MaxCallException(values, last_item)
 
-        # Check the time after to make sure the poll function is called at least once
+        # Check the time after to make sure the poll function is called at least once.
         if timeout is not None and time.time() >= timeout:
             raise TimeoutException(values, last_item)
 
