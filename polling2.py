@@ -1,4 +1,4 @@
-"""polling2 module containing all exceptions and helpers used for the polling function.
+"""Polling2 module containing all exceptions and helpers used for the polling function.
 
 Never write another polling function again.
 
