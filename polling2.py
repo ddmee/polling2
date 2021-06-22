@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 import logging
 import time
@@ -104,10 +104,11 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :param kwargs: Keyword arguments to be passed to the target function
 
     :param timeout: The target function will be called until the time elapsed is greater than the maximum timeout
-        (in seconds). NOTE that the actual execution time of the function *can* exceed the time specified in the timeout.
+        (in seconds). NOTE timeout == 0 or timeout == None is equivalent to setting poll_forever=True.
+        NOTE that the actual execution time of the function *can* exceed the time specified in the timeout.
         For instance, if the target function takes 10 seconds to execute and the timeout is 21 seconds, the polling
         function will take a total of 30 seconds (two iterations of the target --20s which is less than the timeout--21s,
-        and a final iteration)
+        and a final iteration).
 
     :param max_tries: Maximum number of times the target function will be called before failing
 

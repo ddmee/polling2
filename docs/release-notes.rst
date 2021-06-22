@@ -1,6 +1,11 @@
 Release notes
 =============
 
+0.4.7
+-----
+
+- No API changes. Updated documentation to state that timeout=0 or timeout=None is equivalent to setting poll_forever=True.
+
 0.4.6
 -----
 
