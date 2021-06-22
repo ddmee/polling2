@@ -14,9 +14,6 @@ Release v\ |version|.
 .. image:: https://img.shields.io/pypi/dm/polling2.svg
     :target: https://pypi.org/project/polling2
 
-.. image:: http://hits.dwyl.io/ddmee/polling2.svg
-    :target: https://pypi.org/project/polling2
-
 .. image:: https://img.shields.io/pypi/pyversions/polling2.svg
     :target: https://pypi.org/project/polling2
 

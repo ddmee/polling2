@@ -176,6 +176,7 @@ Poll a target forever
 If you do not want to set a timeout on the polled target, you can set the poll_forever parameter to true. This will poll the target forever *until* the target returns the value you expect.
 
 ::
+
     from polling2 import poll
     # Target function returns False. The default check_success looks for a truthy value to be returned.
     # This will call the target function forever, with a one second wait between polls.
@@ -184,6 +185,7 @@ If you do not want to set a timeout on the polled target, you can set the poll_f
 Note, that setting the timeout parameter to None or 0 has the equivalent effect as setting the poll_forever parameter to true. E.g.:
 
 ::
+
     from polling2 import poll
     # Setting timeout to zero is equivalent to setting poll_forever=True.
     # This call will also poll the target forever.
