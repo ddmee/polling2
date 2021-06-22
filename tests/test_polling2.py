@@ -15,6 +15,16 @@ def is_py_34():
     return sys.version_info.major == 3 and sys.version_info.minor == 4
 
 
+def fib(n):
+    """
+    CPU intensive poor implementation of fib - to test multiprocessing backend
+    kill
+    """
+    if n in [0,1]:
+        return n
+    return fib(n-1) + fib(n-2)
+
+
 class TestPoll(object):
 
     def test_import(self):
@@ -126,6 +136,18 @@ class TestPoll(object):
         with pytest.raises(polling2.MaxCallException):
             polling2.poll(target=lambda: 123, step=0.1, max_tries=1,
                           check_success=polling2.is_value(444))
+
+
+    def test_multiprocessing(self):
+        """
+        Test multiprocessing backend poll with per_attempt_timeout set
+        for a CPU intensive function
+        """
+        with pytest.raises(polling2.MaxCallException):
+            polling2.poll(target=fib, args=(100,),
+                          step=0.1, max_tries=1, backend='multiprocessing',
+                          check_success = lambda x: x is None, per_attempt_timeout=1)
+
 
 
 @pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")

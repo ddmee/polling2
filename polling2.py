@@ -8,6 +8,12 @@ __version__ = '0.4.7'
 
 import logging
 import time
+import os
+import signal
+from functools import partial
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, TimeoutError
+from multiprocessing import Manager
+
 try:
     from Queue import Queue
 except ImportError:
@@ -74,6 +80,19 @@ def is_value(val):
         return val is _val
     return checker
 
+def mp_proc(target, q, *args, **kwargs):
+
+    """Use this function to create a multiprocess target that sends the child pid across in queue.
+
+    :param target: The target function that has to be called in a separate process
+    :param q: A multiprocessing Queue object to store the process id
+
+    :return: return value of the target function
+    """
+    q.put(os.getpid())
+    return target(*args, **kwargs)
+
+
 
 def log_value(check_success, level=logging.DEBUG):
     """A decorator for a check_success function that logs the return_value passed to check_success.
@@ -91,7 +110,9 @@ def log_value(check_success, level=logging.DEBUG):
 
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
          step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None,
-         log=logging.NOTSET, log_error=logging.NOTSET):
+         log=logging.NOTSET, log_error=logging.NOTSET, per_attempt_timeout=None,
+         backend='multithreading'):
+
     """Poll by calling a target function until a certain condition is met.
 
     You must specify at least a target function to be called and the step -- base wait time between each function call.
@@ -151,6 +172,19 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
         you are ignoring these exceptions, it seems unlikely that'd you'd want a full stack trace for each exception.
         However, if you do what this, you can retrieve the exceptions using the collect_values parameter.
 
+    :type per_attempt_timeout: int
+    :param per_attempt_timeout: (optional) The execution timeout for one attempt at calling the target function. If the
+        backend is 'multiprocessing',the child process running the target function is terminated to prevent
+        the target from running in the background. By default, the timeout is set to None preventing the target function
+        from being timed out.
+
+    :type backend: str
+    :param backend: (optional) By default 'multithreading' backend is used. backend can either be set to 'multiprocessing'
+        or 'multithreading'. If multithreading is opted, the target function may keep running in background even after the
+        set per_attempt_timeout. multiprocessing backend kills the target functiona fter the per_attempt_timeout. However,
+        only pickle serializable targets may be used with multiprocessing backend.
+
+
     :return: Polling will return first value from the target function that meets the condions of the check_success
         callback. By default, this will be the first value that is not None, 0, False, '', or an empty collection.
 
@@ -169,11 +203,18 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     assert not ((timeout is not None or max_tries is not None) and poll_forever), \
         'You cannot specify both the option to poll_forever and max_tries/timeout.'
 
+    assert backend in ['multithreading', 'multiprocessing'], \
+        'backend must be either multithreading or multiprocessing'
+
     kwargs = kwargs or dict()
     values = collect_values or Queue()
 
     timeout = time.time() + timeout if timeout else None
     tries = 0
+
+    mgr = Manager()
+    mp_q = mgr.Queue()
+    target_mp = partial(mp_proc, target, mp_q)
 
     # Always log what polling is about to take place.
     msg = ("Begin poll(target=%s, step=%s, timeout=%s, max_tries=%s, poll_forever=%s)")
@@ -188,9 +229,25 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
         if max_tries is not None and tries >= max_tries:
             raise MaxCallException(values, last_item)
 
+        executor = ProcessPoolExecutor(max_workers = 1) if \
+            backend == 'multiprocessing' else ThreadPoolExecutor(max_workers = 1)
+
+        call_target = target_mp if backend == 'multiprocessing' else\
+            target
+
+        future = executor.submit(call_target, *args, **kwargs)
+
         try:
-            val = target(*args, **kwargs)
+            val = future.result(per_attempt_timeout)
             last_item = val
+        except TimeoutError as e:
+            last_item = e
+            if log_error: # NOTSET is 0, so it'll evaluate to False.
+                LOGGER.log(log_error, "Current attempt at calling target resulted in exception %r", e)
+
+            if (not future.done()) and backend == 'multiprocessing':
+                os.kill(mp_q.get(), signal.SIGTERM)
+
         except ignore_exceptions as e:
             last_item = e
 
