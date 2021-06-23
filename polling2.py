@@ -161,6 +161,9 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     This message should allow a user to work-out how long the poll could take, and thereby detect a hang in real-time
     if the poll takes longer than it should.
     """
+    
+    signal.signal(signal.SIGTERM, handler)
+    signal.signal(signal.SIGINT, handler)
 
     assert (timeout is not None or max_tries is not None) or poll_forever, \
         ('You did not specify a maximum number of tries or a timeout. Without either of these set, the polling '
@@ -215,3 +218,7 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
         time.sleep(step)
         step = step_function(step)
+
+def handler(signum, frame):
+    LOGGER.log(logging.DEBUG, "Polling Interrupted requested...exiting")
+    sys.exit()
