@@ -229,6 +229,9 @@ class TestPoll(object):
         # raises_errors is a function that returns 3 different things, each time it is called.
         # First it raises a ValueError, then EOFError, then a TypeError.
         raises_errors = Mock(return_value=True, side_effect=[ValueError, EOFError, RuntimeError])
+        # Seems to be an issue on python 2 with functools.wraps and Mocks(). See https://stackoverflow.com/a/22204742/4498470
+        # Just going to ignore this until someone complains.
+        raises_errors.__name__ = 'raises_errors'
         with pytest.raises(RuntimeError):
             # We are ignoring the exceptions other than a TypeError.
             # Note, instead of using @, calling poll_decorator like a traditional function.
