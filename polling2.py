@@ -4,8 +4,9 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.7'
+__version__ = '0.4.8'
 
+from functools import wraps
 import logging
 import time
 try:
@@ -215,3 +216,19 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
         time.sleep(step)
         step = step_function(step)
+
+
+def poll_decorator(step, timeout=None, max_tries=None, check_success=is_truthy,
+                   step_function=step_constant, ignore_exceptions=(), poll_forever=False,
+                   collect_values=None, log=logging.NOTSET, log_error=logging.NOTSET):
+    """Use poll() as a decorator.
+
+    :return: decorator using poll()"""
+    def decorator(target):
+        @wraps(target)
+        def wrapper(*args, **kwargs):
+            return poll(target=target, step=step, args=args, kwargs=kwargs, timeout=timeout, max_tries=max_tries,
+                        check_success=check_success, step_function=step_function, ignore_exceptions=ignore_exceptions,
+                        poll_forever=poll_forever, collect_values=collect_values, log=log, log_error=log_error)
+        return wrapper
+    return decorator

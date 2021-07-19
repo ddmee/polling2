@@ -190,3 +190,21 @@ Note, that setting the timeout parameter to None or 0 has the equivalent effect 
     # Setting timeout to zero is equivalent to setting poll_forever=True.
     # This call will also poll the target forever.
     poll(target=lambda: False, step=1, timeout=0)
+
+
+Wrap a target function in a polling decorator
+---------------------------------------------
+
+Perhaps you'd like to use the decorator syntax to implement the polling functional. No problem!
+
+::
+
+    from polling2 import poll_decorator
+    import requests
+    @poll_decorator(step=1, timeout=15)
+    def wait_until_exists(uri):
+        return requests.get(uri).status_code != 404
+    # Call when you please
+    wait_until_exists(uri='http://www.google.com')
+
+Inspiration taken from https://github.com/benjamin-hodgson/poll per request from https://github.com/lucasmelin.

@@ -43,6 +43,15 @@ Examples
     >> # Wait until the number of seconds (ignoring milliseconds) is divisible by 5.
     >>  polling2.poll(target=time.time, check_success=lambda x: int(x) % 5 == 0, step=0.5, timeout=6)
     1599737060.4507122
+    >> # Lets use the decorator version to create a function that waits until the next even second.
+    >> @polling2.poll_decorator(check_success=lambda x: int(x) % 2 == 0, step=0.5, timeout=6)
+    ... def even_time():
+    ...     return time.time()
+    >> even_time()
+    1599737080.016323
+    >> even_time()
+    1599737082.035758
+
 
 View all the examples:
 
