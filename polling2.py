@@ -4,7 +4,7 @@ Never write another polling function again.
 
 """
 
-__version__ = '0.4.8'
+__version__ = '0.5.0'
 
 from functools import wraps
 import logging

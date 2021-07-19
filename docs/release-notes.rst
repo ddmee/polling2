@@ -1,7 +1,7 @@
 Release notes
 =============
 
-0.4.8
+0.5.0
 -----
 - NEW API addition: poll_decorator(). Per user-request, you can now use @poll_decorator() as a way to wrap a function with poll().
 - The api otherwise remains the same. See the new function poll_decorator(). All options and arguments remain equivalent in poll()/poll_decorator(). Fully backward compatible change.
