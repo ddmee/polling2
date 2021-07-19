@@ -14,7 +14,12 @@ The main method is the poll method.
 
 .. autofunction:: poll
 
+
+Poll Decorator
+--------------
+
 There is also an equivalent decorator method. It's interface is essentially the same as poll().
+But benefits from allowing you to write the polling functionality with decorator syntax.
 
 .. autofunction:: poll_decorator
 
