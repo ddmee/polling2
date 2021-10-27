@@ -92,7 +92,7 @@ def log_value(check_success, level=logging.DEBUG):
 
 def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check_success=is_truthy,
          step_function=step_constant, ignore_exceptions=(), poll_forever=False, collect_values=None,
-         log=logging.NOTSET, log_error=logging.NOTSET):
+         initial_delay=None, log=logging.NOTSET, log_error=logging.NOTSET):
     """Poll by calling a target function until a certain condition is met.
 
     You must specify at least a target function to be called and the step -- base wait time between each function call.
@@ -140,6 +140,9 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
     :param collect_values: By default, polling will create a new Queue to store all of the target's return values.
         Optionally, you can specify your own queue to collect these values for access to it outside of function scope.
 
+    :param initial_delay: Step defines the amount of time to wait (in
+    seconds) before the first function call
+
     :type log: int or str, one of logging._levelNames
     :param log: (optional) By default, return values passed to check_success are not logged. However, if this param is
         set to a log level greater than NOTSET, then the return values passed to check_success will be logged.
@@ -182,6 +185,9 @@ def poll(target, step, args=(), kwargs=None, timeout=None, max_tries=None, check
 
     if log:
         check_success = log_value(check_success, level=log)
+
+    if initial_delay is not None and initial_delay >= 0:
+        time.sleep(initial_delay)
 
     last_item = None
     while True:
