@@ -1,8 +1,15 @@
 Release notes
 =============
 
+1.0.0
+-----
+
+- API change if you have been optimising asserts away.
+- Remove use of ``assert`` in ``poll()`` function. Issue raised that Bandit flags this as a low severity CWE because asserts can be removed at runtime by an optimiser. Switch to using if statements that raise ``AssertionError``. In practice, a user should see no difference in how they use the ``poll()`` function. Unless they have been optimising these asserts away and providing arguments combinations that would otherwise have tripped the assert clauses.
+
 0.5.0
 -----
+
 - NEW API addition: poll_decorator(). Per user-request, you can now use @poll_decorator() as a way to wrap a function with poll().
 - The api otherwise remains the same. See the new function poll_decorator(). All options and arguments remain equivalent in poll()/poll_decorator(). Fully backward compatible change.
 
