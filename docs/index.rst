@@ -80,6 +80,7 @@ If you want to contribute to the project...
    dev/contributing
    dev/authors
    dev/future
+   dev/code_of_conduct
 
 Release notes
 --------------
