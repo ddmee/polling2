@@ -457,11 +457,9 @@ class TestPollLogging(object):
                 log_error=logging.DEBUG,
             )
         assert len(caplog.records) == 3, "Wrong number of log records."
-        assert (
-            caplog.records[1].message
-            == "poll() ignored exception ValueError('msg this',)"
+        assert caplog.records[1].message.startswith(
+            "poll() ignored exception ValueError('msg this"
         )
-        assert (
-            caplog.records[2].message
-            == "poll() ignored exception RuntimeError('this msg',)"
+        assert caplog.records[2].message.startswith(
+            "poll() ignored exception RuntimeError('this msg"
         )
