@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.com/ddmee/polling2.svg?branch=master)](https://travis-ci.org/ddmee/polling2)
 [![PyPI](https://img.shields.io/pypi/dm/polling2.svg)]()
 [![PyPI](https://img.shields.io/pypi/v/polling2.svg)]()
+[![Documentation Status](https://readthedocs.org/projects/polling2/badge/?version=latest)](https://polling2.readthedocs.io/en/latest/?badge=latest)
+
 
 # polling2
 
