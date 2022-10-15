@@ -41,6 +41,14 @@ Release v\ |version|.
     :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
     :alt: Code Smells
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Black autoformat
+
+.. image:: https://img.shields.io/badge/security-bandit-yellow.svg
+    :target: https://github.com/PyCQA/bandit
+    :alt: Bandit scanning
+
 **Polling2** is a powerful python utility used to wait for a function to return when the specified condition is met.
 
 Install

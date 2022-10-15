@@ -7,6 +7,8 @@
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
+[![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # polling2
 

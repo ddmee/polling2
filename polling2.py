@@ -180,15 +180,16 @@ def poll(
     This message should allow a user to work-out how long the poll could take, and thereby detect a hang in real-time
     if the poll takes longer than it should.
     """
+    if not ((timeout is not None or max_tries is not None) or poll_forever):
+        raise AssertionError(
+            "You did not specify a maximum number of tries or a timeout. Without either of these set, the polling "
+            'function will poll forever. If this is the behavior you want, pass "poll_forever=True"'
+        )
 
-    assert (timeout is not None or max_tries is not None) or poll_forever, (
-        "You did not specify a maximum number of tries or a timeout. Without either of these set, the polling "
-        'function will poll forever. If this is the behavior you want, pass "poll_forever=True"'
-    )
-
-    assert not (
-        (timeout is not None or max_tries is not None) and poll_forever
-    ), "You cannot specify both the option to poll_forever and max_tries/timeout."
+    if (timeout is not None or max_tries is not None) and poll_forever:
+        raise AssertionError(
+            "You cannot specify both the option to poll_forever and max_tries/timeout."
+        )
 
     kwargs = kwargs or dict()
     values = collect_values or Queue()
