@@ -20,7 +20,7 @@ setup(
     description='Updated polling utility with many configurable options',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url='http://github.com/ddmee/polling2',
+    url='https://github.com/ddmee/polling2',
     download_url='',
     py_modules=['polling2'],
     tests_require=TEST_REQUIREMENTS,

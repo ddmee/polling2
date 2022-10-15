@@ -21,6 +21,26 @@ Release v\ |version|.
     :target: https://polling2.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=alert_status
+    :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
+    :alt: Quality Gate Status
+
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=bugs
+    :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
+    :alt: Bugs
+
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=vulnerabilities
+    :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
+    :alt: Vulnerabilities
+
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=security_rating
+    :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
+    :alt: Security Rating
+
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=code_smells
+    :target: https://sonarcloud.io/summary/new_code?id=ddmee_polling2
+    :alt: Code Smells
+
 **Polling2** is a powerful python utility used to wait for a function to return when the specified condition is met.
 
 Install
