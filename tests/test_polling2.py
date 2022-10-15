@@ -9,6 +9,9 @@ from mock import Mock, patch
 
 import polling2
 
+WRONG_LOG_NUM = "Wrong number of log records."
+WRONG_LAST_VAL = "The last value was incorrect"
+
 
 def is_py_34():
     """Returns True if the version of python running the tests is 3.4."""
@@ -24,33 +27,6 @@ class TestPoll(object):
         assert poll
         assert polling2
         assert poll_decorator
-
-    def test_arg_no_arg(self):
-        """Tests various permutations of calling with invalid args"""
-        with pytest.raises(TypeError):
-            polling2.poll()
-
-    def test_decorator_arg_no_arg(self):
-        with pytest.raises(TypeError):
-
-            @polling2.poll_decorator
-            def throwaway():
-                pass
-
-            throwaway()
-
-    def test_arg_no_step(self):
-        with pytest.raises(TypeError):
-            polling2.poll(lambda: True)
-
-    def test_decorator_arg_no_step(self):
-        with pytest.raises(TypeError):
-
-            @polling2.poll_decorator
-            def throwaway():
-                pass
-
-            throwaway()
 
     def test_no_poll_forever_or_maxtries(self):
         """No error raised without specifying poll_forever or a timeout/max_tries"""
@@ -127,7 +103,7 @@ class TestPoll(object):
             assert (
                 e.values.qsize() == 1
             ), "There should have been 1 value pushed to the queue of values"
-            assert e.last is False, "The last value was incorrect"
+            assert e.last is False, WRONG_LAST_VAL
         else:
             assert False, "No timeout exception raised"
 
@@ -151,7 +127,7 @@ class TestPoll(object):
             assert (
                 e.values.qsize() == 1
             ), "There should have been 1 value pushed to the queue of values"
-            assert e.last is False, "The last value was incorrect"
+            assert e.last is False, WRONG_LAST_VAL
         else:
             assert False, "No timeout exception raised"
 
@@ -174,7 +150,7 @@ class TestPoll(object):
             assert (
                 e.values.qsize() == tries
             ), "Poll function called the incorrect number of times"
-            assert e.last is False, "The last value was incorrect"
+            assert e.last is False, WRONG_LAST_VAL
         else:
             assert False, "No MaxCallException raised"
 
@@ -194,7 +170,7 @@ class TestPoll(object):
             assert (
                 e.values.qsize() == tries
             ), "Poll function called the incorrect number of times"
-            assert e.last is False, "The last value was incorrect"
+            assert e.last is False, WRONG_LAST_VAL
         else:
             assert False, "No MaxCallException raised"
 
@@ -296,7 +272,7 @@ class TestPoll(object):
             max_tries=1,
             check_success=polling2.is_value(123),
         )
-        assert result is 123
+        assert result == 123
         with pytest.raises(polling2.MaxCallException):
             polling2.poll(
                 target=lambda: 123,
@@ -332,7 +308,7 @@ class TestPoll(object):
         def throwaway():
             return 123
 
-        assert throwaway() is 123
+        assert throwaway() == 123
 
         with pytest.raises(polling2.MaxCallException):
 
@@ -429,7 +405,7 @@ class TestPollLogging(object):
                 step=0.1,
                 max_tries=2,
             )
-            assert len(caplog.records) == 1, "Wrong number of log records."
+            assert len(caplog.records) == 1, WRONG_LOG_NUM
             # Test that logging.NOTSET does not print log records either.
             polling2.poll(
                 target=raises_errors,
@@ -438,7 +414,7 @@ class TestPollLogging(object):
                 max_tries=2,
                 log_error=logging.NOTSET,
             )
-            assert len(caplog.records) == 2, "Wrong number of log records."
+            assert len(caplog.records) == 2, WRONG_LOG_NUM
 
     def test_log_error_set_at_debug_level(self, caplog):
         """
@@ -456,7 +432,7 @@ class TestPollLogging(object):
                 max_tries=2,
                 log_error=logging.DEBUG,
             )
-        assert len(caplog.records) == 3, "Wrong number of log records."
+        assert len(caplog.records) == 3, WRONG_LOG_NUM
         assert caplog.records[1].message.startswith(
             "poll() ignored exception ValueError('msg this"
         )
