@@ -2,7 +2,11 @@
 [![PyPI](https://img.shields.io/pypi/dm/polling2.svg)]()
 [![PyPI](https://img.shields.io/pypi/v/polling2.svg)]()
 [![Documentation Status](https://readthedocs.org/projects/polling2/badge/?version=latest)](https://polling2.readthedocs.io/en/latest/?badge=latest)
-
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
 
 # polling2
 
