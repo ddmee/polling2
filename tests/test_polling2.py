@@ -82,26 +82,6 @@ class TestPoll(object):
 
             throwaway()
 
-    def test_type_error_when_misspelt_argnames(self):
-        with pytest.raises(TypeError):
-            polling2.poll(
-                target=lambda: None,
-                step=2,
-                timeout=10,
-                check_sucess=lambda rv: rv is None,
-            )
-
-    def test_decorator_type_error_when_misspelt_argnames(self):
-        with pytest.raises(TypeError):
-
-            @polling2.poll_decorator(
-                step=2, timeout=10, check_sucess=lambda rv: rv is None
-            )
-            def throwaway():
-                return None
-
-            throwaway()
-
     def test_valid_arg_options(self):
         # Valid options
         polling2.poll(lambda: True, step=1, poll_forever=True)
