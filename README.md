@@ -26,13 +26,13 @@ Some possible uses cases include:
 
 Polling2 is handy for getting rid of all that duplicated polling-code. Often, applications require retrying until the correct response is returned. Why re-implement the ability to poll again and again? Use Polling2!
 
-Polling2 is a fork of the original [polling](https://github.com/justiniso/polling). It was forked when the original maintainer failed to respond to issues or PRs. 
+Polling2 is a fork of the original [polling](https://github.com/justiniso/polling). It was forked when the original maintainer failed to respond to issues or PRs.
 
 Polling2 is _under active development_. Would you like to see a particular feature? Ask and thou shall recieve.
 
 ## Installation
 
-```
+```shell
 pip install polling2
 ```
 
@@ -46,6 +46,23 @@ python setup.py test
 # run the tests
 pytest tests
 ```
+
+Note, `tox` is also available, as well as `pre-commit`.
+
+```shell
+# install tox and run it
+pip install tox
+tox
+```
+
+Pre-commit performs auto-formatting and things of that nature before each commit.
+
+```shell
+pip install pre-commit
+pre-commit install
+```
+
+Now pre-commit will run automatically on ``git commit``.
 
 ## Example:
 

@@ -16,3 +16,17 @@ You can get your development environment running cloning the repository. Please 
     python setup.py test
     # run the tests
     pytest tests
+
+You can also use tox, which will run the tests for you.
+
+    pip install tox
+    tox
+
+Pre-commit is also used to help auto-format things and do some checks before each commit.
+
+    pip install pre-commit
+    pre-commit install
+
+Now pre-commit will run automatically on ``git commit``.
+
+Note, there are also build jobs that run when a PR is opened on github. They provide extra checks that are easier to do on the CI pipeline rather than locally. Ultimately, the CI pipeline controls whether a PR is good enough to merge into master.

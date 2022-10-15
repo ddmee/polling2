@@ -4,7 +4,7 @@ The API
 .. module:: polling2
 
 This part of the documentation covers all the interfaces of polling2. polling2
-depends on no external libraries and should run any version of python 2 or 3. 
+depends on no external libraries and should run any version of python 2 or 3.
 
 
 Poll Method
