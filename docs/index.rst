@@ -17,6 +17,10 @@ Release v\ |version|.
 .. image:: https://img.shields.io/pypi/pyversions/polling2.svg
     :target: https://pypi.org/project/polling2
 
+.. image:: https://snyk.io/advisor/python/polling2/badge.svg
+  :target: https://snyk.io/advisor/python/polling2
+  :alt: polling2
+
 **Polling2** is a powerful python utility used to wait for a function to return when the specified condition is met.
 
 Install
