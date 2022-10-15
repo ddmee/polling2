@@ -60,10 +60,10 @@ Polling for Selenium WebDriver elements
 ::
 
     from selenium import webdriver
-     
+
     driver = webdriver.Firefox()
     driver.get('http://google.com')
-     
+
     search_box = polling2.poll(lambda: driver.find_element_by_id('search'), step=0.5, timeout=7)
     search_box.send_keys('python polling')
 
@@ -77,7 +77,7 @@ You can access them in the except block.
 ::
 
     import random
-     
+
     try:
         polling2.poll(lambda: random.choice([0, (), False]), step=0.5, timeout=1)
     except polling2.TimeoutException, te:
@@ -104,11 +104,11 @@ Using a custom condition callback function
 ::
 
     import requests
-     
+
     def is_correct_response(response):
         """Check that the response returned 'success'"""
         return response == 'success'
-    
+
     polling2.poll(
         lambda: requests.put('http://mysite.com/api/user', data={'username': 'Jill'},
         check_success=is_correct_response,
@@ -122,11 +122,11 @@ Logging the return values from the target function
 
     import logging
     import requests
-     
+
     def is_correct_response(response):
         """Check that the response returned 'success'"""
         return response == 'success'
-     
+
     polling2.poll(
         lambda: requests.put('http://mysite.com/api/user', data={'username': 'Jill'},
         check_success=is_correct_response,
@@ -151,13 +151,13 @@ code snippet, the ValueError raised by the function `raises_error()` will be sen
     import polling2
     import logging
     import mock
-     
+
     # basicConfig should sent warning level messages to the stdout.
     logging.basicConfig()
-     
+
     # Create a function that raises a ValueError, then a RuntimeError.
     raises_error = mock.Mock(side_effect=[ValueError('a message'), RuntimeError])
-     
+
     try:
         polling2.poll(
             target=raises_error,

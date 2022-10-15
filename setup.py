@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
+
 from polling2 import __version__
 
 # consts
@@ -13,19 +15,21 @@ with open(os.path.join(HERE, "test_requirements.txt")) as fp:
     TEST_REQUIREMENTS = fp.read().split("\n")
 
 setup(
-    name='polling2',
+    name="polling2",
     version=__version__,
-    author='Donal Mee',
-    author_email='mee.donal@gmail.com',
-    description='Updated polling utility with many configurable options',
+    author="Donal Mee",
+    author_email="mee.donal@gmail.com",
+    description="Updated polling utility with many configurable options",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url='https://github.com/ddmee/polling2',
-    download_url='',
-    py_modules=['polling2'],
+    url="https://github.com/ddmee/polling2",
+    download_url="",
+    py_modules=["polling2"],
     tests_require=TEST_REQUIREMENTS,
-    test_suite='tests',
-    setup_requires=['pytest-runner',],
+    test_suite="tests",
+    setup_requires=[
+        "pytest-runner",
+    ],
     classifiers=[
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
