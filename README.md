@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/ddmee/polling2.svg?branch=master)](https://travis-ci.org/ddmee/polling2)
-[![PyPI](https://img.shields.io/pypi/dm/polling2.svg)]()
-[![PyPI](https://img.shields.io/pypi/v/polling2.svg)]()
+[![PyPI](https://img.shields.io/pypi/dm/polling2.svg)](https://pypi.org/project/polling2/)
+[![PyPI](https://img.shields.io/pypi/v/polling2.svg)](https://pypi.org/project/polling2/)
 [![Documentation Status](https://readthedocs.org/projects/polling2/badge/?version=latest)](https://polling2.readthedocs.io/en/latest/?badge=latest)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ddmee_polling2&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ddmee_polling2)
