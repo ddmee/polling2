@@ -2,7 +2,7 @@ alabaster==0.7.12
 Babel==2.10.3
 certifi==2022.9.24
 chardet==5.0.0
-colorama==0.4.3
+colorama==0.4.6
 docutils==0.19
 idna==3.4
 imagesize>=1.3
