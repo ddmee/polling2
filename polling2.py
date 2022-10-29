@@ -143,7 +143,7 @@ def poll(
 
         >>> def my_step_function(step):
         >>>     step += 10
-        >>>     return max(step, 100)
+        >>>     return min(step, 100)
 
     :type ignore_exceptions: tuple
     :param ignore_exceptions: You can specify a tuple of exceptions that should be caught and ignored on every
