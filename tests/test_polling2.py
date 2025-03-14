@@ -5,7 +5,10 @@ import time
 import unittest
 
 import pytest
-from mock import Mock, patch
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 import polling2
 
@@ -92,8 +95,8 @@ class TestPoll(object):
 
         throwaway()
 
-    @patch("time.sleep", return_value=None)
-    @patch("time.time", return_value=0)
+    @mock.patch("time.sleep", return_value=None)
+    @mock.patch("time.time", return_value=0)
     def test_timeout_exception(self, patch_sleep, patch_time):
 
         # Since the timeout is < 0, the first iteration of polling should raise the error if max timeout < 0
@@ -111,8 +114,8 @@ class TestPoll(object):
         val = polling2.poll(lambda: True, step=0, timeout=0)
         assert val is True, "Val was: {} != {}".format(val, True)
 
-    @patch("time.sleep", return_value=None)
-    @patch("time.time", return_value=0)
+    @mock.patch("time.sleep", return_value=None)
+    @mock.patch("time.time", return_value=0)
     def test_decorator_timeout_exception(self, patch_sleep, patch_time):
 
         # Since the timeout is < 0, the first iteration of polling should raise the error if max timeout < 0
@@ -214,7 +217,7 @@ class TestPoll(object):
         """
         # raises_errors is a function that returns 3 different things, each time it is called.
         # First it raises a ValueError, then EOFError, then a TypeError.
-        raises_errors = Mock(
+        raises_errors = mock.Mock(
             return_value=True, side_effect=[ValueError, EOFError, RuntimeError]
         )
         with pytest.raises(RuntimeError):
@@ -234,10 +237,10 @@ class TestPoll(object):
         """
         # raises_errors is a function that returns 3 different things, each time it is called.
         # First it raises a ValueError, then EOFError, then a TypeError.
-        raises_errors = Mock(
+        raises_errors = mock.Mock(
             return_value=True, side_effect=[ValueError, EOFError, RuntimeError]
         )
-        # Seems to be an issue on python 2 with functools.wraps and Mocks(). See https://stackoverflow.com/a/22204742/4498470
+        # Seems to be an issue on python 2 with functools.wraps and mock.Mocks(). See https://stackoverflow.com/a/22204742/4498470
         # Just going to ignore this until someone complains.
         raises_errors.__name__ = "raises_errors"
         with pytest.raises(RuntimeError):
@@ -397,7 +400,7 @@ class TestPollLogging(object):
         """
         Shouldn't log anything unless explicitly asked to do so. Except for Begin poll()
         """
-        raises_errors = Mock(side_effect=ValueError("msg is this"))
+        raises_errors = mock.Mock(side_effect=ValueError("msg is this"))
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
             polling2.poll(
                 target=raises_errors,
@@ -421,7 +424,7 @@ class TestPollLogging(object):
         Test that when the log_error parameter is set to debug level, the ignored
         errors are sent to the logger.
         """
-        raises_errors = Mock(
+        raises_errors = mock.Mock(
             side_effect=[ValueError("msg this"), RuntimeError("this msg")]
         )
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
