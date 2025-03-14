@@ -1,10 +1,11 @@
+"""Tests for the polling2 module."""
+
 import logging
 import re
-import sys
 import time
-import unittest
 
 import pytest
+
 try:
     from unittest import mock
 except ImportError:
@@ -16,14 +17,9 @@ WRONG_LOG_NUM = "Wrong number of log records."
 WRONG_LAST_VAL = "The last value was incorrect"
 
 
-def is_py_34():
-    """Returns True if the version of python running the tests is 3.4."""
-    return sys.version_info.major == 3 and sys.version_info.minor == 4
-
-
 class TestPoll(object):
     def test_import(self):
-        """Test that you can import via correct usage"""
+        """Test that you can import via correct usage."""
         import polling2
         from polling2 import poll, poll_decorator
 
@@ -32,33 +28,32 @@ class TestPoll(object):
         assert poll_decorator
 
     def test_no_poll_forever_or_maxtries(self):
-        """No error raised without specifying poll_forever or a timeout/max_tries"""
+        """No error raised without specifying poll_forever or a timeout/max_tries."""
         with pytest.raises(AssertionError):
             polling2.poll(lambda: True, step=1)
 
     def test_decorator_no_poll_forever_or_maxtries(self):
-        """No error raised without specifying poll_forever or a timeout/max_tries"""
+        """No error raised without specifying poll_forever or a timeout/max_tries."""
+
+        @polling2.poll_decorator(step=1)
+        def throwaway():
+            return True
+
         with pytest.raises(AssertionError):
-
-            @polling2.poll_decorator(step=1)
-            def throwaway():
-                return True
-
             throwaway()
 
     def test_poll_forever_with_timeout_max_tries(self):
         with pytest.raises(AssertionError):
             polling2.poll(
-                lambda: True, step=1, timeout=1, max_tries=1, poll_forever=True
+                lambda: True, step=1, timeout=1, max_tries=1, poll_forever=True,
             )
 
     def test_decorator_poll_forever_with_timeout_max_tries(self):
+        @polling2.poll_decorator(step=1, timeout=1, max_tries=1, poll_forever=True)
+        def throwaway():
+            return True
+
         with pytest.raises(AssertionError):
-
-            @polling2.poll_decorator(step=1, timeout=1, max_tries=1, poll_forever=True)
-            def throwaway():
-                return True
-
             throwaway()
 
     def test_valid_arg_options(self):
@@ -99,16 +94,15 @@ class TestPoll(object):
     @mock.patch("time.time", return_value=0)
     def test_timeout_exception(self, patch_sleep, patch_time):
 
-        # Since the timeout is < 0, the first iteration of polling should raise the error if max timeout < 0
-        try:
+        # Since the timeout is < 0, the first iteration of polling should raise the
+        # error if max timeout < 0
+        with pytest.raises(polling2.TimeoutException) as exc_info:
             polling2.poll(lambda: False, step=10, timeout=-1)
-        except polling2.TimeoutException as e:
-            assert (
-                e.values.qsize() == 1
-            ), "There should have been 1 value pushed to the queue of values"
-            assert e.last is False, WRONG_LAST_VAL
-        else:
-            assert False, "No timeout exception raised"
+
+        assert (
+            exc_info.value.values.qsize() == 1
+        ), "There should have been 1 value pushed to the queue of values"
+        assert not exc_info.value.last, WRONG_LAST_VAL
 
         # Test happy path timeout
         val = polling2.poll(lambda: True, step=0, timeout=0)
@@ -117,22 +111,19 @@ class TestPoll(object):
     @mock.patch("time.sleep", return_value=None)
     @mock.patch("time.time", return_value=0)
     def test_decorator_timeout_exception(self, patch_sleep, patch_time):
+        @polling2.poll_decorator(step=10, timeout=-1)
+        def throwaway():
+            return False
 
-        # Since the timeout is < 0, the first iteration of polling should raise the error if max timeout < 0
-        try:
-
-            @polling2.poll_decorator(step=10, timeout=-1)
-            def throwaway():
-                return False
-
+        # Since the timeout is < 0, the first iteration of polling should raise the
+        # error if max timeout < 0
+        with pytest.raises(polling2.TimeoutException) as exc_info:
             throwaway()
-        except polling2.TimeoutException as e:
-            assert (
-                e.values.qsize() == 1
-            ), "There should have been 1 value pushed to the queue of values"
-            assert e.last is False, WRONG_LAST_VAL
-        else:
-            assert False, "No timeout exception raised"
+
+        assert (
+            exc_info.value.values.qsize() == 1
+        ), "There should have been 1 value pushed to the queue of values"
+        assert not exc_info.value.last, WRONG_LAST_VAL
 
         # Test happy path timeout
         @polling2.poll_decorator(step=0, timeout=0)
@@ -143,44 +134,33 @@ class TestPoll(object):
         assert val is True, "Val was: {} != {}".format(val, True)
 
     def test_max_call_exception(self):
-        """
-        Test that a MaxCallException will be raised
-        """
+        """Test that a MaxCallException will be raised."""
         tries = 100
-        try:
+        with pytest.raises(polling2.MaxCallException) as exc_info:
             polling2.poll(lambda: False, step=0, max_tries=tries)
-        except polling2.MaxCallException as e:
-            assert (
-                e.values.qsize() == tries
-            ), "Poll function called the incorrect number of times"
-            assert e.last is False, WRONG_LAST_VAL
-        else:
-            assert False, "No MaxCallException raised"
+
+        assert (
+            exc_info.value.values.qsize() == tries
+        ), "Poll function called the incorrect number of times"
+        assert not exc_info.value.last, WRONG_LAST_VAL
 
     def test_decorator_max_call_exception(self):
-        """
-        Test that a MaxCallException will be raised
-        """
+        """Test that a MaxCallException will be raised."""
         tries = 100
-        try:
+        @polling2.poll_decorator(step=0, max_tries=tries)
+        def throwaway():
+            return False
 
-            @polling2.poll_decorator(step=0, max_tries=tries)
-            def throwaway():
-                return False
-
+        with pytest.raises(polling2.MaxCallException) as exc_info:
             throwaway()
-        except polling2.MaxCallException as e:
-            assert (
-                e.values.qsize() == tries
-            ), "Poll function called the incorrect number of times"
-            assert e.last is False, WRONG_LAST_VAL
-        else:
-            assert False, "No MaxCallException raised"
+
+        assert (
+            exc_info.value.values.qsize() == tries
+        ), "Poll function called the incorrect number of times"
+        assert not exc_info.value.last, WRONG_LAST_VAL
 
     def test_max_call_no_sleep(self):
-        """
-        Test that a MaxCallException is raised without sleeping after the last call
-        """
+        """Test that a MaxCallException is raised without sleeping after the last call."""
         tries = 2
         sleep = 0.1
         start_time = time.time()
@@ -192,33 +172,30 @@ class TestPoll(object):
         ), "Poll function slept before MaxCallException"
 
     def test_decorator_max_call_no_sleep(self):
-        """
-        Test that a MaxCallException is raised without sleeping after the last call
-        """
+        """Test that a MaxCallException is raised without sleeping after the last call."""
         tries = 2
         sleep = 0.1
         start_time = time.time()
 
+        @polling2.poll_decorator(step=sleep, max_tries=tries)
+        def throwaway():
+            return False
+
         with pytest.raises(polling2.MaxCallException):
-
-            @polling2.poll_decorator(step=sleep, max_tries=tries)
-            def throwaway():
-                return False
-
             throwaway()
         assert (
             time.time() - start_time < tries * sleep
         ), "Poll function slept before MaxCallException"
 
     def test_ignore_specified_exceptions(self):
-        """
-        Test that ignore_exceptions tuple will ignore exceptions specified.
+        """Test that ignore_exceptions tuple will ignore exceptions specified.
+
         Should throw any errors not in the tuple.
         """
         # raises_errors is a function that returns 3 different things, each time it is called.
         # First it raises a ValueError, then EOFError, then a TypeError.
         raises_errors = mock.Mock(
-            return_value=True, side_effect=[ValueError, EOFError, RuntimeError]
+            return_value=True, side_effect=[ValueError, EOFError, RuntimeError],
         )
         with pytest.raises(RuntimeError):
             # We are ignoring the exceptions other than a TypeError.
@@ -231,14 +208,14 @@ class TestPoll(object):
         assert raises_errors.call_count == 3
 
     def test_decorator_ignore_specified_exceptions(self):
-        """
-        Test that ignore_exceptions tuple will ignore exceptions specified.
+        """Test that ignore_exceptions tuple will ignore exceptions specified.
+
         Should throw any errors not in the tuple.
         """
         # raises_errors is a function that returns 3 different things, each time it is called.
         # First it raises a ValueError, then EOFError, then a TypeError.
         raises_errors = mock.Mock(
-            return_value=True, side_effect=[ValueError, EOFError, RuntimeError]
+            return_value=True, side_effect=[ValueError, EOFError, RuntimeError],
         )
         # Seems to be an issue on python 2 with functools.wraps and mock.Mocks(). See https://stackoverflow.com/a/22204742/4498470
         # Just going to ignore this until someone complains.
@@ -247,14 +224,12 @@ class TestPoll(object):
             # We are ignoring the exceptions other than a TypeError.
             # Note, instead of using @, calling poll_decorator like a traditional function.
             polling2.poll_decorator(
-                step=0.1, max_tries=3, ignore_exceptions=(ValueError, EOFError)
+                step=0.1, max_tries=3, ignore_exceptions=(ValueError, EOFError),
             )(target=raises_errors)()
         assert raises_errors.call_count == 3
 
     def test_check_is_value(self):
-        """
-        Test that is_value() function can be used to create custom checkers.
-        """
+        """Test that is_value() function can be used to create custom checkers."""
         result = polling2.poll(
             target=lambda: None,
             step=0.1,
@@ -285,12 +260,10 @@ class TestPoll(object):
             )
 
     def test_decorator_check_is_value(self):
-        """
-        Test that is_value() function can be used to create custom checkers.
-        """
+        """Test that is_value() function can be used to create custom checkers."""
 
         @polling2.poll_decorator(
-            step=0.1, max_tries=1, check_success=polling2.is_value(None)
+            step=0.1, max_tries=1, check_success=polling2.is_value(None),
         )
         def throwaway():
             return None
@@ -298,7 +271,7 @@ class TestPoll(object):
         assert throwaway() is None
 
         @polling2.poll_decorator(
-            step=0.1, max_tries=1, check_success=polling2.is_value(False)
+            step=0.1, max_tries=1, check_success=polling2.is_value(False),
         )
         def throwaway():
             return False
@@ -306,26 +279,25 @@ class TestPoll(object):
         assert throwaway() is False
 
         @polling2.poll_decorator(
-            step=0.1, max_tries=1, check_success=polling2.is_value(123)
+            step=0.1, max_tries=1, check_success=polling2.is_value(123),
         )
         def throwaway():
             return 123
 
         assert throwaway() == 123
 
+        @polling2.poll_decorator(
+            step=0.1, max_tries=1, check_success=polling2.is_value(444),
+        )
+        def throwaway():
+            return 123
+
         with pytest.raises(polling2.MaxCallException):
-
-            @polling2.poll_decorator(
-                step=0.1, max_tries=1, check_success=polling2.is_value(444)
-            )
-            def throwaway():
-                return 123
-
             throwaway()
 
     def test_decorator_uses_wraps(self):
-        """
-        Test that the function name is not replaced when poll_decorator() is used.
+        """Test that the function name is not replaced when poll_decorator() is used.
+
         Thus we should be using functools.wraps() correctly.
         """
 
@@ -340,12 +312,9 @@ class TestPoll(object):
         ), "decorated function doc has changed"
 
 
-@pytest.mark.skipif(is_py_34(), reason="pytest logcap fixture isn't available on 3.4")
 class TestPollLogging(object):
     def test_logs_call(self, caplog):
-        """
-        Test that basic information about the call to poll() is always logged.
-        """
+        """Test that basic information about the call to poll() is always logged."""
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1)
             assert len(caplog.records) == 1, "Should only be one log record."
@@ -366,9 +335,7 @@ class TestPollLogging(object):
             assert re.search(pattern=pattern, string=record.message, flags=re.VERBOSE)
 
     def test_logs_response_at_debug(self, caplog):
-        """
-        Test that the log_value decorator will log values returned to a check_success function.
-        """
+        """Test that the log_value decorator will log values returned to check_success(..)."""
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.DEBUG)
             assert len(caplog.records) == 2, "Should only be two log records."
@@ -377,9 +344,7 @@ class TestPollLogging(object):
             assert record.message == "poll() calls check_success(True)"
 
     def test_logs_response_change_level(self, caplog):
-        """
-        Test that the log parameter controls the logging level in poll function
-        """
+        """Test that the log parameter controls the logging level in poll function."""
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1, log=logging.INFO)
             assert len(caplog.records) == 2, "Should only be two log record."
@@ -388,8 +353,9 @@ class TestPollLogging(object):
             assert record.message == "poll() calls check_success(True)"
 
     def test_default_is_not_log(self, caplog):
-        """
-        Shouldn't log anything unless explicitly asked to do so. Except for Begin poll()
+        """Shouldn't log anything unless explicitly asked to do so.
+
+        This applies to everything except for the first poll call().
         """
         with caplog.at_level(logging.DEBUG):
             polling2.poll(target=lambda: True, step=0.1, max_tries=1)
@@ -397,8 +363,9 @@ class TestPollLogging(object):
             assert "Begin poll(" in caplog.records[0].msg
 
     def test_log_error_default_is_not_log(self, caplog):
-        """
-        Shouldn't log anything unless explicitly asked to do so. Except for Begin poll()
+        """Shouldn't log anything unless explicitly asked to do so.
+
+        This applies to everything except for the first poll call().
         """
         raises_errors = mock.Mock(side_effect=ValueError("msg is this"))
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
@@ -417,15 +384,14 @@ class TestPollLogging(object):
                 max_tries=2,
                 log_error=logging.NOTSET,
             )
-            assert len(caplog.records) == 2, WRONG_LOG_NUM
+        assert len(caplog.records) == 2, WRONG_LOG_NUM
 
     def test_log_error_set_at_debug_level(self, caplog):
-        """
-        Test that when the log_error parameter is set to debug level, the ignored
+        """Test that when the log_error parameter is set to debug level, the ignored
         errors are sent to the logger.
         """
         raises_errors = mock.Mock(
-            side_effect=[ValueError("msg this"), RuntimeError("this msg")]
+            side_effect=[ValueError("msg this"), RuntimeError("this msg")],
         )
         with caplog.at_level(logging.DEBUG), pytest.raises(polling2.MaxCallException):
             polling2.poll(
@@ -437,8 +403,8 @@ class TestPollLogging(object):
             )
         assert len(caplog.records) == 3, WRONG_LOG_NUM
         assert caplog.records[1].message.startswith(
-            "poll() ignored exception ValueError('msg this"
+            "poll() ignored exception ValueError('msg this",
         )
         assert caplog.records[2].message.startswith(
-            "poll() ignored exception RuntimeError('this msg"
+            "poll() ignored exception RuntimeError('this msg",
         )
