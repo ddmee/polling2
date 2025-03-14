@@ -190,7 +190,7 @@ def poll(
         (timeout is not None or max_tries is not None) and poll_forever
     ), "You cannot specify both the option to poll_forever and max_tries/timeout."
 
-    kwargs = kwargs or dict()
+    kwargs = kwargs or {}
     values = collect_values or Queue()
 
     timeout = time.time() + timeout if timeout else None
@@ -252,7 +252,8 @@ def poll_decorator(
 ):
     """Use poll() as a decorator.
 
-    :return: decorator using poll()"""
+    :return: decorator using poll()
+    """
 
     def decorator(target):
         @wraps(target)
