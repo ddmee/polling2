@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -11,17 +11,17 @@ repos:
     -   id: check-added-large-files
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 7.0.0
     hooks:
       - id: isort
         name: isort (python)
 
 - repo: https://github.com/psf/black
-  rev: 22.10.0
+  rev: 25.9.0
   hooks:
     - id: black
       # It is recommended to specify the latest version of Python
       # supported by your project here, or alternatively use
       # pre-commit's default_language_version, see
       # https://pre-commit.com/#top_level-default_language_version
-      language_version: python3.9
+      language_version: python3.11
